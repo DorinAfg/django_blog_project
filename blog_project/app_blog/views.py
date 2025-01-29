@@ -1,14 +1,17 @@
-from rest_framework import generics, permissions
+import serializers
 from rest_framework.views import APIView
-from rest_framework.response import Response
 from django.contrib.auth.models import User
-from .models import Profile, Post, Comment, Like
+from .models import Profile
 from .serializers import ProfileSerializer, PostSerializer, CommentSerializer, LikeSerializer
-from rest_framework.response import Response
 from rest_framework import permissions, status
-from .models import Like, Post, Comment
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics, permissions
+from rest_framework.response import Response
+from .models import Like, Post, Comment
+from .serializers import LikeSerializer
+from rest_framework.exceptions import ValidationError
+
 
 
 #class that represents the view that handles managing posts
@@ -58,55 +61,53 @@ class CommentListCreateView(generics.ListCreateAPIView):
 
 #class that creates the view for creating a like for a post or comment.
 #APIView is a base class that allows for handling API operations in general, handle POST
-class LikeCreateView(APIView):
+class LikeCreateView(generics.CreateAPIView):  # שימוש ב-CreateAPIView במקום APIView
+    queryset = Like.objects.all()
+    serializer_class = LikeSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request, *args, **kwargs):
-        data = request.data
+    def perform_create(self, serializer):
+        post_id = self.request.data.get('post')
+        comment_id = self.request.data.get('comment')
 
-        post_id = data.get('post')
-        comment_id = data.get('comment')
-
-        # ודא לפחות אחד מהם נמסר (פוסט או תגובה)
         if not post_id and not comment_id:
-            return Response({"detail": "Either 'post' or 'comment' is required"}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidationError({"detail": "Either 'post' or 'comment' is required"})
 
-        # אם ה-user שולח גם פוסט וגם תגובה, יש להחזיר שגיאה
         if post_id and comment_id:
-            return Response({"detail": "You cannot like both a post and a comment at the same time"}, status=status.HTTP_400_BAD_REQUEST)
+            raise ValidationError({"detail": "You cannot like both a post and a comment at the same time"})
 
-        # אם נבחר פוסט, נוודא שהוא קיים
+        if post_id and Like.objects.filter(user=self.request.user, post_id=post_id).exists():
+            raise ValidationError({"detail": "You already liked this post"})
+
+        if comment_id and Like.objects.filter(user=self.request.user, comment_id=comment_id).exists():
+            raise ValidationError({"detail": "You already liked this comment"})
+
+        serializer.save(user=self.request.user, post_id=post_id if post_id else None,
+                        comment_id=comment_id if comment_id else None)
+
+
+class LikeListView(generics.ListAPIView):
+    serializer_class = LikeSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # קבלת פרמטרים מה-URL
+        post_id = self.request.query_params.get('post', None)
+        comment_id = self.request.query_params.get('comment', None)
+
+        # אם יש פוסט, תחפש את הלייקים לפי post_id
         if post_id:
-            try:
-                post = Post.objects.get(id=post_id)
-            except Post.DoesNotExist:
-                return Response({"detail": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
-
-            # מניעת לייק כפול לפוסט
-            if Like.objects.filter(user=request.user, post=post).exists():
-                return Response({"detail": "You already liked this post"}, status=status.HTTP_400_BAD_REQUEST)
-
-            # יצירת הלייק לפוסט
-            like = Like.objects.create(user=request.user, post_id=post_id)
-
-        # אם נבחרה תגובה, נוודא שהיא קיימת
+            return Like.objects.filter(post_id=post_id)
+        # אם יש תגובה, תחפש את הלייקים לפי comment_id
         elif comment_id:
-            try:
-                comment = Comment.objects.get(id=comment_id)
-            except Comment.DoesNotExist:
-                return Response({"detail": "Comment not found"}, status=status.HTTP_404_NOT_FOUND)
-
-            # מניעת לייק כפול לתגובה
-            if Like.objects.filter(user=request.user, comment_id=comment_id).exists():
-                return Response({"detail": "You already liked this comment"}, status=status.HTTP_400_BAD_REQUEST)
-
-            # יצירת הלייק לתגובה
-            like = Like.objects.create(user=request.user, comment_id=comment_id)
-
-        return Response({"message": "Liked successfully"}, status=status.HTTP_201_CREATED)
+            return Like.objects.filter(comment_id=comment_id)
+        else:
+            # אם אין פרמטרים, מחזיר את כל הלייקים (או תוכל לשים default pagination)
+            return Like.objects.all()  # מחזיר את כל הלייקים ללא סינון
 
 @api_view(['GET'])
 def check_authentication(request):
     if request.user.is_authenticated:
         return Response({"message": f"You are logged in as {request.user.username}"})
     return Response({"message": "You are not logged in"}, status=401)
+

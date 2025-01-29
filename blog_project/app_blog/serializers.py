@@ -1,5 +1,8 @@
 from rest_framework import serializers
 from .models import Profile, Post, Comment, Like
+from rest_framework.exceptions import ValidationError
+from django.contrib.auth.models import User
+
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,6 +29,10 @@ class CommentSerializer(serializers.ModelSerializer):
         return CommentSerializer(obj.replies.all(), many=True).data
 
 class LikeSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)  # עדיין מוגדר כ-read_only
+
     class Meta:
         model = Like
-        fields = '__all__'
+        fields = ['id', 'user', 'post']  # רישום השדות הספציפיים שצריכים להיכלל ב-POST
+        read_only_fields = ['user']  # קבעו ש-read_only יהיו רק שדות שצריך
+

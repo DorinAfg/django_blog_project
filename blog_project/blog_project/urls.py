@@ -43,5 +43,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path('api/', include('app_blog.urls')),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='swagger'),
+    path('api/auth/', include('dj_rest_auth.urls')),  # כניסה/יציאה
+    path('api/auth/registration/', include('dj_rest_auth.registration.urls')),  # רישום
 
 ]

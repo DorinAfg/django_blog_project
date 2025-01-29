@@ -45,8 +45,18 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     #swagger UI
     'drf_yasg',
+    'django.contrib.sites',  # חובה עבור allauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',  # הוסף את זה כאן
+    # dj-rest-auth
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
 ]
-
+SITE_ID = 1  # חובה עבור Django Allauth
+ACCOUNT_EMAIL_VERIFICATION = "optional"  # אפשר לשנות ל-'mandatory' אם רוצים חובה
+ACCOUNT_AUTHENTICATION_METHOD = "username"
+ACCOUNT_EMAIL_REQUIRED = True
 
 REST_FRAMEWORK = {
     #Determines the type of pagination
@@ -81,6 +91,7 @@ LOGGING = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'allauth.account.middleware.AccountMiddleware',  # הוסף את זה כאן
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
