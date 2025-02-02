@@ -1,4 +1,6 @@
-
+from rest_framework.parsers import MultiPartParser, FormParser
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from .serializers import PostSerializer, CommentSerializer
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
@@ -24,6 +26,23 @@ class PostListCreateView(generics.ListCreateAPIView):
     #IsAuthenticatedOrReadOnly: access permission allows unlogged users to only read the data (READ)
     #only login users to perform write operations (CREATE, UPDATE, DELETE).
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    #Image upload support
+    parser_classes = (MultiPartParser, FormParser)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                'image',
+                openapi.IN_FORM,
+                description="Upload an image for the post",
+                type=openapi.TYPE_FILE
+            ),
+        ],
+        request_body=PostSerializer
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
 
     #An action performed after a POST call fails the serializer, after creating a new object לחזור על זה
     def perform_create(self, serializer):
