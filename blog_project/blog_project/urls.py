@@ -14,10 +14,14 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import path, include
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from rest_framework.permissions import AllowAny
+from django.contrib import admin
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 #Swagger
 #schema_view is the interface that displays the API documentation in a graphical form.
@@ -37,6 +41,15 @@ schema_view = get_schema_view(
     #Swagger UI will be available to anyone who requests it. (because it true)
    public=True,
 )
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Blog API",
+        default_version='v1',
+        description="API for blog posts, including image uploads",
+    ),
+    public=True,
+    permission_classes=(AllowAny,),
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -46,3 +59,5 @@ urlpatterns = [
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
 
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
