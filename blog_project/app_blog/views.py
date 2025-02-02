@@ -1,9 +1,5 @@
-import serializers
-from rest_framework.views import APIView
-from django.contrib.auth.models import User
-from .models import Profile
-from .serializers import ProfileSerializer, PostSerializer, CommentSerializer, LikeSerializer
-from rest_framework import permissions, status
+
+from .serializers import PostSerializer, CommentSerializer
 from rest_framework.decorators import api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics, permissions
@@ -91,19 +87,15 @@ class LikeListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # קבלת פרמטרים מה-URL
         post_id = self.request.query_params.get('post', None)
         comment_id = self.request.query_params.get('comment', None)
 
-        # אם יש פוסט, תחפש את הלייקים לפי post_id
         if post_id:
             return Like.objects.filter(post_id=post_id)
-        # אם יש תגובה, תחפש את הלייקים לפי comment_id
         elif comment_id:
             return Like.objects.filter(comment_id=comment_id)
         else:
-            # אם אין פרמטרים, מחזיר את כל הלייקים (או תוכל לשים default pagination)
-            return Like.objects.all()  # מחזיר את כל הלייקים ללא סינון
+            return Like.objects.all()
 
 @api_view(['GET'])
 def check_authentication(request):

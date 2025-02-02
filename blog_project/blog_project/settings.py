@@ -45,16 +45,16 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     #swagger UI
     'drf_yasg',
-    'django.contrib.sites',  # חובה עבור allauth
+    'django.contrib.sites',
     'allauth',
     'allauth.account',
-    'allauth.socialaccount',  # הוסף את זה כאן
+    'allauth.socialaccount',
     # dj-rest-auth
     'dj_rest_auth',
     'dj_rest_auth.registration',
 ]
-SITE_ID = 1  # חובה עבור Django Allauth
-ACCOUNT_EMAIL_VERIFICATION = "optional"  # אפשר לשנות ל-'mandatory' אם רוצים חובה
+SITE_ID = 1
+ACCOUNT_EMAIL_VERIFICATION = "optional"
 ACCOUNT_AUTHENTICATION_METHOD = "username"
 ACCOUNT_EMAIL_REQUIRED = True
 

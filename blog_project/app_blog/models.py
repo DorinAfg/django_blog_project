@@ -1,4 +1,3 @@
-from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.db import models
@@ -55,7 +54,7 @@ class Like(models.Model):
     #Optional link to comment (like comment).
     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name="likes", null=True, blank=True)
     #Displays text describing the like:
-    created_at = models.DateTimeField(default=timezone.now)  # פתרון שיקבע תאריך לכל הרשומות הישנות
+    created_at = models.DateTimeField(default=timezone.now)
     def __str__(self):
         if self.post:
             #If it's a like for a post, indicates the name of the post.

@@ -7,7 +7,7 @@ urlpatterns = [
     path('posts/', PostListCreateView.as_view(), name='post-list'),
     path('posts/<int:pk>/', PostDetailView.as_view(), name='post-detail'),
     path('comments/', CommentListCreateView.as_view(), name='comment-list'),
-    path('likes/', LikeListView.as_view(), name='like-list'),  # שליפת לייקים
-    path('likes/create/', LikeCreateView.as_view(), name='like-create'),  # יצירת לייקים
+    path('likes/', LikeListView.as_view(), name='like-list'),
+    path('likes/create/', LikeCreateView.as_view(), name='like-create'),
     path('check-auth/', check_authentication, name='check-auth'),
 ]
