@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from .models import Like, Post, Comment
 from .serializers import LikeSerializer
 from rest_framework.exceptions import ValidationError
-
+from rest_framework import status
 
 
 #class that represents the view that handles managing posts
@@ -76,7 +76,7 @@ class CommentListCreateView(generics.ListCreateAPIView):
 
 #class that creates the view for creating a like for a post or comment.
 #APIView is a base class that allows for handling API operations in general, handle POST
-class LikeCreateView(generics.CreateAPIView):  # שימוש ב-CreateAPIView במקום APIView
+class LikeCreateView(generics.CreateAPIView):
     queryset = Like.objects.all()
     serializer_class = LikeSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -122,3 +122,11 @@ def check_authentication(request):
         return Response({"message": f"You are logged in as {request.user.username}"})
     return Response({"message": "You are not logged in"}, status=401)
 
+@api_view(['GET'])
+def get_post_likes_count(request, post_id):
+    try:
+        post = Post.objects.get(id=post_id)
+        like_count = post.likes.count()
+        return Response({"likes_count": like_count})
+    except Post.DoesNotExist:
+        return Response({"error": "Post not found"}, status=404)
