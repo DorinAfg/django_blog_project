@@ -23,29 +23,15 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 
-#Swagger
-#schema_view is the interface that displays the API documentation in a graphical form.
-schema_view = get_schema_view(
-    #openapi.Info() function allows to set general information about my API
-   openapi.Info(
-      title="Blog API",
-      #The API version to display
-      default_version='v1',
-      description="swagger of the Blog API",
-      #Link to the API Terms of Use
-      #Here a link to Google's Terms of Use page is provided
-      terms_of_service="https://www.google.com/policies/terms/",
-      contact=openapi.Contact(email="dorinafg2@gmail.com"),
-      license=openapi.License(name="IDF License"),
-   ),
-    #Swagger UI will be available to anyone who requests it. (because it true)
-   public=True,
-)
+# Swagger schema
 schema_view = get_schema_view(
     openapi.Info(
         title="Blog API",
         default_version='v1',
-        description="API for blog posts, including image uploads",
+        description="API for blog posts, including likes & image uploads",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="dorinafg2@gmail.com"),
+        license=openapi.License(name="IDF License"),
     ),
     public=True,
     permission_classes=(AllowAny,),
@@ -53,11 +39,11 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path('api/', include('app_blog.urls')),
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='swagger'),
+    path('api/', include('app_blog.urls')),  # זה מחבר את ה-urls של app_blog
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('api/auth/', include('dj_rest_auth.urls')),
     path('api/auth/registration/', include('dj_rest_auth.registration.urls')),
-
 ]
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
